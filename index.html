@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>寻宝小游戏</title>
+<style>
+  body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+  }
+ .game-container {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+  }
+ .game-header {
+    padding: 20px;
+    background-color: #4CAF50;
+    color: white;
+    text-align: center;
+  }
+  #gameArea {
+    width: 100%;
+    height: 400px;
+    position: relative;
+    background-image: url('/image/地图.jpg');
+    background-size: cover;
+    background-position: center;
+    cursor: pointer; /* 显示手型光标 */
+  }
+ .treasure {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    display: none; /* 默认不显示宝藏 */
+  }
+ .game-footer {
+    padding: 20px;
+    text-align: center;
+  }
+ .reset-button {
+    display: none;
+    margin-top: 20px;
+  }
+</style>
+</head>
+<body>
+
+<div class="game-container">
+  <div class="game-header">
+    <h1>寻宝小游戏</h1>
+  </div>
+  <div id="gameArea">
+    <!-- 多个宝藏地点 -->
+    <img class="treasure" src="/image/山洞.jpg" alt="Treasure" id="treasure1">
+    <img class="treasure" src="/image/地窟.jpg" alt="Treasure" id="treasure2">
+    <img class="treasure" src="/image/古堡.jpg" alt="Treasure" id="treasure3">
+    <img class="treasure" src="/image/沉船.png" alt="Treasure" id="treasure4">
+    <img class="treasure" src="/image/宝箱.jpg" alt="Treasure" id="treasure5">
+  </div>
+  <div class="game-footer">
+    <button onclick="startGame()">开始游戏</button>
+    <button class="reset-button" onclick="resetGame()">重置游戏</button>
+    <p id="gameStatus">点击地图区域寻找宝藏！</p>
+  </div>
+</div>
+
+<audio id="bgMusic" src="/天空之城.mp3" autoplay loop></audio>
+<script>
+  // 宝藏地点数组，包含图片和坐标
+  var treasures = [
+    { img: '/image/山洞.jpg', x: 100, y: 100 },
+    { img: '/image/地窟.jpg', x: 500, y: 300 },
+    { img: '/image/古堡.jpg', x: 400, y: 200 },
+    { img: '/image/沉船.png', x: 300, y: 200 },
+    { img: '/image/宝箱.jpg', x: 600, y: 400 }
+
+  ];
+
+  // 简单的寻宝逻辑
+  var hasFoundTreasure = false; // 是否已经找到宝藏
+
+  function startGame() {
+    hasFoundTreasure = false; // 重置是否找到宝藏的状态
+    document.querySelector('.reset-button').style.display = 'none'; // 隐藏重置按钮
+    document.getElementById('gameStatus').textContent = '点击地图区域寻找宝藏！';
+    // 随机选择一个宝藏地点作为真正的宝藏
+    var chosenTreasureIndex = Math.floor(Math.random() * treasures.length);
+    document.querySelectorAll('.treasure').forEach(function(item, index) {
+      item.src = treasures[index].img; // 设置图片
+      item.style.left = treasures[index].x + 'px';
+      item.style.top = treasures[index].y + 'px';
+      if (index === chosenTreasureIndex) {
+        item.dataset.isRealTreasure = 'true';
+      } else {
+        item.dataset.isRealTreasure = 'false';
+      }
+    });
+    // 点击地图时显示宝藏
+    document.getElementById('gameArea').addEventListener('click', function() {
+      document.querySelectorAll('.treasure').forEach(function(item) {
+        item.style.display = 'block';
+      });
+    });
+  }
+
+  function resetGame() {
+    hasFoundTreasure = false; // 重置是否找到宝藏的状态
+    document.querySelector('.reset-button').style.display = 'none'; // 隐藏重置按钮
+    document.getElementById('gameStatus').textContent = '点击地图区域寻找宝藏！';
+    document.querySelectorAll('.treasure').forEach(function(item) {
+      item.style.display = 'none'; // 隐藏所有宝藏
+    });
+    startGame(); // 重新开始游戏
+  }
+
+  document.getElementById('gameArea').addEventListener('click', function(e) {
+    // 检查是否点击到了宝藏
+    var targetTreasure = e.target;
+    if (targetTreasure.classList.contains('treasure')) {
+      if (targetTreasure.dataset.isRealTreasure === 'true' &&!hasFoundTreasure) {
+        alert('恭喜你找到了宝藏！');
+        hasFoundTreasure = true; // 标记为已经找到宝藏
+        document.querySelector('.reset-button').style.display = 'block'; // 显示重置按钮
+        document.getElementById('gameStatus').textContent = '寻宝成功！点击重置按钮重新开始。';
+        // 隐藏所有宝藏
+        document.querySelectorAll('.treasure').forEach(function(item) {
+          item.style.display = 'none';
+        });
+      } else if (targetTreasure.dataset.isRealTreasure === 'false' &&!hasFoundTreasure) {
+        alert('遇到危险，寻宝失败！');
+        hasFoundTreasure = true; // 标记为游戏结束
+        document.querySelector('.reset-button').style.display = 'block'; // 显示重置按钮
+        document.getElementById('gameStatus').textContent = '寻宝失败！点击重置按钮重新开始。';
+        // 隐藏所有宝藏
+        document.querySelectorAll('.treasure').forEach(function(item) {
+          item.style.display = 'none';
+        });
+      }
+    }
+  });
+
+  // 使用Web Storage API存储玩家信息
+  var playerId = 'player123';
+  var playerNickname = '寻宝者';
+  var gameHistory = [];
+
+  // 假设从服务器获取到了玩家信息
+  function fetchPlayerInfo() {
+    return {
+      id: playerId,
+      nickname: playerNickname,
+      history: gameHistory
+    };
+  }
+
+  // 将玩家信息存储在localStorage中
+  function savePlayerInfo(playerInfo) {
+    localStorage.setItem('playerInfo', JSON.stringify(playerInfo));
+  }
+
+  // 从localStorage中获取玩家信息
+  function loadPlayerInfo() {
+    var playerInfo = localStorage.getItem('playerInfo');
+    if (playerInfo) {
+      return JSON.parse(playerInfo);
+    } else {
+      return fetchPlayerInfo();
+    }
+  }
+
+  // 初始化玩家信息
+  var playerInfo = loadPlayerInfo();
+  savePlayerInfo(playerInfo);
+
+</script>
+
+</body>
+</html>
